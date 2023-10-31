@@ -10,7 +10,10 @@ const port = process.env.PORT || 5001;
 
 // middleware
 app.use(cors({
-      origin: ['http://localhost:5173'],
+      origin: [
+            'https://car-doctor-5d0e4.web.app',
+            'https://car-doctor-5d0e4.firebaseapp.com/?_gl=1*nzia04*_ga*MjEzNzM5Mzk1MC4xNjk4NzQ3MDk1*_ga_CW55HF8NVT*MTY5ODc0NzA5OS4xLjEuMTY5ODc0NzU5My4zNS4wLjA.'
+      ],
       credentials: true
 }))
 app.use(express.json());
@@ -47,7 +50,7 @@ const verifyToken = (req, res, next) => {
                   res.status(401).send({ message: 'Unauthorized Access' })
             }
             req.user = decoded
-            console.log('decoded',decoded);
+            console.log('decoded', decoded);
             next()
       })
 }
@@ -55,7 +58,7 @@ const verifyToken = (req, res, next) => {
 async function run() {
       try {
             // Connect the client to the server	(optional starting in v4.7)
-            await client.connect();
+            // await client.connect();
 
             // access token api
             app.post('/jwt', async (req, res) => {
@@ -64,17 +67,22 @@ async function run() {
                   res
                         .cookie('token', token, {
                               httpOnly: true,
-                              secure: false
+                              secure: true,
+                              sameSite: 'none',
                         })
                         .send({ message: true })
             })
-            
-            
+
+
             // clear token
             app.post('/logout', async (req, res) => {
                   const user = req.body;
                   res
-                        .clearCookie('token', { maxAge: 0 })
+                        .clearCookie('token', {
+                              maxAge: 0, 
+                              secure: true,
+                              sameSite: 'none',
+                        },)
                         .send({ success: true })
             })
 
@@ -149,7 +157,7 @@ async function run() {
             })
 
             // Send a ping to confirm a successful connection
-            await client.db("admin").command({ ping: 1 });
+            // await client.db("admin").command({ ping: 1 });
             console.log("Pinged your deployment. You successfully connected to MongoDB!");
       } finally {
             // Ensures that the client will close when you finish/error
